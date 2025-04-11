@@ -56,6 +56,33 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+resource "aws_s3_bucket" "hashicat_bucket" {
+  bucket = "hashicat-wiz-demo-${random_id.bucket_id.hex}"
+  acl    = "public-read" # ❌ Deliberately insecure
+
+  website {
+    index_document = "index.html"
+  }
+
+  tags = {
+    Name        = "HashiCat Insecure S3"
+    Environment = "Demo"
+  }
+}
+
+resource "random_id" "bucket_id" {
+  byte_length = 4
+}
+
+resource "aws_s3_bucket_public_access_block" "no_block_public_access" {
+  bucket = aws_s3_bucket.hashicat_bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
 output "app_url" {
   value = "http://${aws_instance.hashicat.public_dns}"
 }
